@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { UserDataContext } from '../context/UserContext'
 import axios from 'axios'
 import { Eye, EyeOff } from 'lucide-react'
+import { toast } from 'react-toastify'
 
 const UserLogin = () => {
     const [email, setEmail] = useState('')
@@ -17,7 +18,12 @@ const UserLogin = () => {
     const submitHandler = async (e) => {
 
         e.preventDefault();
-        // submit krne k bad ye empty ho jayega
+
+        // Check for empty fields
+        if (!email.trim() || !password.trim()) {
+            toast.warning('Please enter both email and password')
+            return
+        }
 
         const userData = {
             email,
@@ -34,10 +40,21 @@ const UserLogin = () => {
                 const data = response.data;
                 setUser(data.user);
                 localStorage.setItem('userToken', data.userToken);
+                toast.success('Login successful!')
                 navigate('/home');
             }
         } catch (err) {
-            console.error(err); // error दिखेगा
+            if (err.response) {
+                if (err.response.status === 401) {
+                    toast.error('Incorrect email or password')
+                } else if (err.response.status === 400) {
+                    toast.error(err.response.data?.message || 'Invalid credentials')
+                } else {
+                    toast.error('Something went wrong. Please try again.')
+                }
+            } else {
+                toast.error('Unable to connect to server. Check your internet.')
+            }
         }
 
         setEmail('')

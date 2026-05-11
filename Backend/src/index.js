@@ -14,8 +14,8 @@ initializeSocket(server);
 
 connectDB()
     .then(() => {
-        server.listen(process.env.PORT || 8000, () => {
-            console.log(`✅ Server is running on Port : ${process.env.PORT || 8000}`);
+        server.listen(process.env.PORT || 4000, () => {
+            console.log(`✅ Server is running on Port : ${process.env.PORT || 4000}`);
         });
     })
     .catch((error) => {

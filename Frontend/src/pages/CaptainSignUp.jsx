@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { CaptainDataContext } from '../context/CaptainContext'
 import axios from 'axios'
+import { toast } from 'react-toastify'
 
 const CaptainSignUp = () => {
   const [email, setEmail] = useState('')
@@ -20,6 +21,13 @@ const CaptainSignUp = () => {
 
   const submitHandler = async (e) => {
     e.preventDefault();
+
+    // Check for empty fields
+    if (!firstName.trim() || !lastName.trim() || !email.trim() || !password.trim() ||
+        !vehicleColor.trim() || !vehiclePlate.trim() || !vehicleCapacity || !vehicleType) {
+      toast.warning('Please fill in all fields')
+      return
+    }
 
     const captainData = {
       fullName: {
@@ -44,10 +52,19 @@ const CaptainSignUp = () => {
         const data = response.data;
         setCaptain(data.captain)
         localStorage.setItem('captainToken', data.captainToken)
+        toast.success('Captain account created successfully!')
         navigate('/captain-home')
       }
     } catch (err) {
-      console.error('Captain signup error:', err);
+      if (err.response) {
+        if (err.response.status === 400) {
+          toast.error(err.response.data?.message || 'Invalid details. Please check your input.')
+        } else {
+          toast.error('Something went wrong. Please try again.')
+        }
+      } else {
+        toast.error('Unable to connect to server. Check your internet.')
+      }
     }
 
     setEmail('')

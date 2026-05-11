@@ -10,9 +10,12 @@ function initializeSocket(server) {
 
     io = new Server(server, {
         cors: {
-            origin: '*',
+            origin: [
+                "http://localhost:5173",
+                "https://tripzy-nine.vercel.app"
+            ],
             methods: ['GET', 'POST'],
-            
+            credentials: true
         }
     });
 

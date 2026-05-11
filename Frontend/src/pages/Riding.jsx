@@ -30,7 +30,7 @@ const Riding = () => {
         }
 
         const options = {
-            key: "rzp_test_RpPU9ohfAPagEv",   // Razorpay Key
+            key: import.meta.env.VITE_RAZORPAY_KEY_ID,   // Razorpay Key
             amount: ride?.fare * 100,  // rupees ➜ paise
             currency: "INR",
             name: "Tripzy",

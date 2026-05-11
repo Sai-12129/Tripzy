@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { UserDataContext } from '../context/UserContext.jsx'
+import { toast } from 'react-toastify'
 
 
 const UserSignUp = () => {
@@ -21,6 +22,12 @@ const UserSignUp = () => {
 
     e.preventDefault();
 
+    // Check for empty fields
+    if (!firstName.trim() || !lastName.trim() || !email.trim() || !password.trim()) {
+      toast.warning('Please fill in all fields')
+      return
+    }
+
     const newUser = {
       fullName: {
         firstName: firstName,
@@ -37,10 +44,19 @@ const UserSignUp = () => {
         const data = response.data
         setUser(data.user)
         localStorage.setItem('userToken', data.userToken)
+        toast.success('Account created successfully!')
         navigate('/home')
       }
     } catch (err) {
-      console.error('User signup error:', err);
+      if (err.response) {
+        if (err.response.status === 400) {
+          toast.error(err.response.data?.message || 'Invalid details. Please check your input.')
+        } else {
+          toast.error('Something went wrong. Please try again.')
+        }
+      } else {
+        toast.error('Unable to connect to server. Check your internet.')
+      }
     }
 
     setEmail('')

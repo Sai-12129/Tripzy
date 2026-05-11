@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { CaptainDataContext } from '../context/CaptainContext'
 import axios from 'axios'
 import { Eye, EyeOff } from 'lucide-react'
+import { toast } from 'react-toastify'
 
 const CaptainLogin = () => {
 
@@ -17,7 +18,12 @@ const CaptainLogin = () => {
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    // submit krne k bad ye empty ho jayega
+
+    // Check for empty fields
+    if (!email.trim() || !password.trim()) {
+      toast.warning('Please enter both email and password')
+      return
+    }
 
     const captain = {
       email: email,
@@ -31,10 +37,21 @@ const CaptainLogin = () => {
         const data = response.data
         setCaptain(data.captain)
         localStorage.setItem('captainToken', data.captainToken)
+        toast.success('Login successful!')
         navigate('/captain-home')
       }
     } catch (err) {
-      console.error('Captain login error:', err);
+      if (err.response) {
+        if (err.response.status === 401) {
+          toast.error('Incorrect email or password')
+        } else if (err.response.status === 400) {
+          toast.error(err.response.data?.message || 'Invalid credentials')
+        } else {
+          toast.error('Something went wrong. Please try again.')
+        }
+      } else {
+        toast.error('Unable to connect to server. Check your internet.')
+      }
     }
 
     setEmail('')
