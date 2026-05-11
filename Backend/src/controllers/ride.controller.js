@@ -1,8 +1,7 @@
 import { validationResult } from "express-validator"
 import getFareService, { confirmRideService, createRideService, endRideService, startRideService } from "../services/ride.service.js"
 import { getCaptainInRadiusService, getAddressCoordinatesService } from "../services/maps.service.js";
-import { get } from "mongoose";
-import { Captain } from "../models/captain.model.js";
+
 import { sendMessageToSocketId } from "../../socket.js";
 import { Ride } from "../models/ride.model.js";
 
@@ -61,7 +60,6 @@ import { Ride } from "../models/ride.model.js";
 const createRide = async (req, res) => {
     console.log("req.user at start of createRide:", req.user);
 
-
     if (!req.user) return res.status(401).json({ message: "Unauthorized" });
 
     const errors = validationResult(req);
@@ -71,7 +69,6 @@ const createRide = async (req, res) => {
 
     try {
         const ride = await createRideService({ user: req.user._id, pickup, destination, vehicleType });
-        res.status(201).json(ride);
 
         const pickupCoordinates = await getAddressCoordinatesService(pickup);
         console.log(pickupCoordinates);
@@ -79,11 +76,9 @@ const createRide = async (req, res) => {
         const captainsInRadius = await getCaptainInRadiusService(pickupCoordinates.lat, pickupCoordinates.lng, 500);
         console.log(captainsInRadius);
 
-        ride.otp = "";
-
         const rideWithUser = await Ride.findOne({ _id: ride._id }).populate('user');
-        const activeCaptains = captainsInRadius.filter(c => c.status === 'active');
-        // ✅ Single loop for socket only
+
+        // ✅ Single loop for socket only — notify nearby captains
         captainsInRadius.forEach((captain) => {
             if (captain.socketId) {
                 sendMessageToSocketId(captain.socketId, {
@@ -92,6 +87,9 @@ const createRide = async (req, res) => {
                 });
             }
         });
+
+        // ✅ Send response LAST, after all async work is done
+        return res.status(201).json(ride);
 
     } catch (err) {
         console.log(err);
@@ -136,10 +134,13 @@ const confirmRide = async (req, res) => {
     try {
         const ride = await confirmRideService({ rideId, captain: req.captain });
 
-        sendMessageToSocketId(ride.user.socketId, {
-            event: 'ride-confirmed',
-            data: ride
-        })
+        // ✅ Guard: only send if user has an active socket
+        if (ride.user?.socketId) {
+            sendMessageToSocketId(ride.user.socketId, {
+                event: 'ride-confirmed',
+                data: ride
+            });
+        }
 
         return res.status(200).json(ride);
 
@@ -164,10 +165,13 @@ const startRide = async (req, res) => {
     try {
         const ride = await startRideService({ rideId, otp, captain: req.captain });
 
-        sendMessageToSocketId(ride.user.socketId, {
-            event: 'ride-start',
-            data: ride
-        })
+        // ✅ Guard: only send if user has an active socket
+        if (ride.user?.socketId) {
+            sendMessageToSocketId(ride.user.socketId, {
+                event: 'ride-start',
+                data: ride
+            });
+        }
 
         return res.status(200).json(ride);
     } catch (err) {
@@ -189,11 +193,13 @@ const endRide = async (req, res) => {
     try {
         const ride = await endRideService({ rideId, captain: req.captain });
 
-        sendMessageToSocketId(ride.user.socketId, {
-            event: 'ride-ended',
-            data: ride
-        })
-        
+        // ✅ Guard: only send if user has an active socket
+        if (ride.user?.socketId) {
+            sendMessageToSocketId(ride.user.socketId, {
+                event: 'ride-ended',
+                data: ride
+            });
+        }
 
         return res.status(200).json(ride);
 

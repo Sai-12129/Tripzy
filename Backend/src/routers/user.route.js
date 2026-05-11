@@ -16,7 +16,7 @@ userRouter.post('/register',
 userRouter.post('/login', [
     body('email').isEmail().withMessage("Invalid Email"),
     body('password').isLength({ min: 6 }).withMessage("password must be 6 length")
-    , loginUser])
+], loginUser)
 
 userRouter.get('/profile', authUser, getUserProfile)
 userRouter.get('/logout', authUser, logoutUser)

@@ -37,13 +37,17 @@ const CaptainSignUp = () => {
       }
     }
 
-    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/register`, captainData)
-  console.log(response);
-    if (response.status == 201) {
-      const data = response.data;
-      setCaptain(data.captain)
-      localStorage.setItem('captainToken', data.captainToken)
-      navigate('/captain-home')
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/register`, captainData)
+      console.log(response);
+      if (response.status == 201) {
+        const data = response.data;
+        setCaptain(data.captain)
+        localStorage.setItem('captainToken', data.captainToken)
+        navigate('/captain-home')
+      }
+    } catch (err) {
+      console.error('Captain signup error:', err);
     }
 
     setEmail('')
@@ -153,7 +157,7 @@ const CaptainSignUp = () => {
             </select>
           </div>
 
-          <button className='bg-[#111] text-white font-semibold mb-3 rounded px-4 py-2 w-full text-base placeholder:text-sm '>
+          <button type="submit" className='bg-[#111] text-white font-semibold mb-3 rounded px-4 py-2 w-full text-lg placeholder:text-base cursor-pointer hover:bg-[#333] transition-colors'>
             Create Captain Account
           </button>
 

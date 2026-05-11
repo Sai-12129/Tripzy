@@ -43,38 +43,47 @@ const CaptainHome = () => {
               lng: position.coords.longitude
             }
           })
+        }, error => {
+          console.error("Geolocation error:", error.message);
         })
       }
     };
 
     const locationInterval = setInterval(updateLocation, 10000)
     updateLocation();
-    // ye hm 10 sec me captian ki location ko update krega
-  }, [])
 
-  socket.on("new-ride", (data) => {
-    console.log("🚖 New ride received:", data);
-    setRide(data);
-    setRidePopUpPanel(true);
-  });
+    socket.on("new-ride", (data) => {
+      console.log("🚖 New ride received:", data);
+      setRide(data);
+      setRidePopUpPanel(true);
+    });
+
+    return () => {
+      clearInterval(locationInterval);
+      socket.off("new-ride");
+    };
+  }, [captain, socket])
 
 
   async function confirmRide() {
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/rides/confirm`, {
+        rideId: ride._id,
+        captainId: captain._id,
 
-    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/rides/confirm`, {
-      rideId: ride._id,
-      captainId: captain._id,
+      }, {
 
-    }, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('captainToken')}`
+        }
 
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('captainToken')}`
-      }
+      })
 
-    })
-
-    setRidePopUpPanel(false)
-    setConfirmRidePopUpPanel(true)
+      setRidePopUpPanel(false)
+      setConfirmRidePopUpPanel(true)
+    } catch (err) {
+      console.error("confirmRide error:", err.message);
+    }
   }
 
 
@@ -116,7 +125,7 @@ const CaptainHome = () => {
 
       <div className='fixed p-6 top-0 flex items-center justify-between w-screen'>
         <img className='w-15 h-15 bg-transparent object-cover' src='/2.png' about='alt' />
-        <Link to='/home' className='h-10  w-10 bg-white flex items-center justify-center rounded-full'>
+        <Link to='/home' className='h-10 w-10 bg-white flex items-center justify-center rounded-full cursor-pointer hover:bg-gray-100 transition-colors'>
           <i className=" text-lg font-medium ri-logout-box-r-line"></i>
         </Link>
       </div>

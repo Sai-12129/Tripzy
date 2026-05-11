@@ -20,7 +20,7 @@ const Start = () => {
                     </h2>
                     <Link 
                       to='/login'  
-                      className='flex items-center justify-center w-full bg-black text-lg sm:text-xl md:text-2xl text-white py-2 sm:py-3 md:py-4 rounded-lg mt-4 sm:mt-5'
+                      className='flex items-center justify-center w-full bg-black text-lg sm:text-xl md:text-2xl text-white py-2 sm:py-3 md:py-4 rounded-lg mt-4 sm:mt-5 cursor-pointer hover:bg-[#333] transition-colors'
                     >
                       Continue
                     </Link>

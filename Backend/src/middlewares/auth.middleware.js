@@ -6,7 +6,7 @@ import { Captain } from "../models/captain.model.js";
 export const authUser = async (req, res, next) => {
     // sbse phle token ko lo 
     //1. here are 2 ways 1 is from cookie and other is from header
-    const userToken  = await req.cookies.userToken  || req.headers.authorization?.split(' ')[1];
+    const userToken  = req.cookies.userToken  || req.headers.authorization?.split(' ')[1];
 
     if (!userToken ) {
         return res.status(401).json({ message: "Unauthorized" })
@@ -45,7 +45,7 @@ export const authUser = async (req, res, next) => {
 export const authCaptain = async (req, res, next) => {
     // sbse phle token ko lo 
     //1. here are 2 ways 1 is from cookie and other is from header
-    const captainToken  = await req.cookies.captainToken  || req.headers.authorization?.split(' ')[1];
+    const captainToken  = req.cookies.captainToken  || req.headers.authorization?.split(' ')[1];
 
     if (!captainToken ) {
         return res.status(401).json({ message: "Unauthorized" })
@@ -63,6 +63,9 @@ export const authCaptain = async (req, res, next) => {
         console.log("Decoded Captain:", decoded);
 
         const captain = await Captain.findById(decoded._id);
+        if (!captain) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
         req.captain = captain;
 
         return next();

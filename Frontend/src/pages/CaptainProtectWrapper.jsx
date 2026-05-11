@@ -32,7 +32,7 @@ const CaptainProtectWrapper = ({ children }) => {
             //to token ko remove kro
             console.log(err)
             localStorage.removeItem('captainToken')
-            navigate('/captai-login')
+            navigate('/captain-login')
         })
 
     }, [captainToken])

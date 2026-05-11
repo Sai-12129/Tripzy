@@ -1,4 +1,5 @@
-import { sendMessageToSocketId } from "../../socket.js";
+// sendMessageToSocketId is intentionally NOT imported here.
+// Socket messaging is handled by the controller layer, not the service layer.
 import { Ride } from "../models/ride.model.js";
 import { getDistanceTimeService } from "./maps.service.js";
 import crypto from 'crypto'
@@ -67,7 +68,7 @@ export const createRideService = async ({ user, pickup, destination, vehicleType
 
     const fare = await getFareService(pickup, destination);
 
-    const ride = Ride.create({
+    const ride = await Ride.create({
         user,
         pickup,
         destination,
@@ -128,27 +129,18 @@ export const startRideService = async ({ rideId, otp, captain }) => {
         throw new Error("Invalid Otp");
     }
 
-    await Ride.findOneAndUpdate(
-        {
-            _id: rideId
-        },
-        {
-            status: 'ongoing'
-        }
-    )
+    const updatedRide = await Ride.findOneAndUpdate(
+        { _id: rideId },
+        { status: 'ongoing' },
+        { new: true }
+    ).populate('user').populate('captain').select('+otp');
 
-    sendMessageToSocketId(ride.user.socketId, {
-        event: 'ride-started',
-        data: ride
-    })
-
-    return ride;
+    return updatedRide;
 
 }
 
 export const endRideService = async ({ rideId, captain }) => {
 
-    // yha ek chiz check krni hogi ki particular captain usi ride se belong krta h ya nhi
     if (!rideId) {
         throw new Error("Ride id is Required")
     }
@@ -166,15 +158,13 @@ export const endRideService = async ({ rideId, captain }) => {
         throw new Error("Ride not ongoing")
     }
 
-    await Ride.findOneAndUpdate(
-        {
-            _id: rideId
-        },
-        {
-            status: 'completed'
-        }
-    )
-    return ride;
+    const updatedRide = await Ride.findOneAndUpdate(
+        { _id: rideId },
+        { status: 'completed' },
+        { new: true }
+    ).populate('user').populate('captain').select('+otp');
+
+    return updatedRide;
 }
 
 

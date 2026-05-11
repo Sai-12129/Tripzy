@@ -8,7 +8,7 @@ const mapRouter = Router();
 
 mapRouter.get('/get-coordinates',
     query('address').isString().isLength({ min: 3 }),
-    
+    authUser,
     getCoordinates)
 
 mapRouter.get('/get-distance-time',

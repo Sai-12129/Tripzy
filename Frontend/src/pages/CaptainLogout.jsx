@@ -8,16 +8,23 @@ const CaptainLogout = () => {
     const navigate = useNavigate()
 
 
-    axios.get(`${import.meta.env.VITE_API_URL}/captains/logout`, {
-        headers: {
-            Authorization: `Bearer ${captainToken}`
-        }
-    }).then((response) => {
-        if (response.status === 200) {
-            localStorage.removeItem('captainToken')
-            navigate('/captain-login')
-        }
-    })
+    React.useEffect(() => {
+        axios.get(`${import.meta.env.VITE_BASE_URL}/captains/logout`, {
+            headers: {
+                Authorization: `Bearer ${captainToken}`
+            }
+        }).then((response) => {
+            if (response.status === 200) {
+                localStorage.removeItem('captainToken')
+                navigate('/captain-login')
+            }
+        }).catch((err) => {
+            console.error("Captain logout error:", err.message);
+            // Even if server fails, we should clear token and redirect
+            localStorage.removeItem('captainToken');
+            navigate('/captain-login');
+        })
+    }, [captainToken, navigate]);
 
     return (
         <div>CaptainLogout</div>

@@ -12,14 +12,11 @@ const getCoordinates = async (req, res, next) => {
     const { address } = req.query;
 
     try {
-
         const coordinates = await getAddressCoordinatesService(address)
-        res.status(200).json(coordinates)
-
+        return res.status(200).json(coordinates)
     } catch (error) {
-
-        res.status(404).json({ message: 'Coordinates not found' });
-
+        console.error('getCoordinates error:', error);
+        return res.status(404).json({ message: 'Coordinates not found' });
     }
 
 }

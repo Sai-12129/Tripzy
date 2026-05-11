@@ -47,24 +47,26 @@ const Home = () => {
   useEffect(() => {
     if (user && user._id) {
       socket.emit("join", { userType: "user", userId: user._id });
-      // console.log("join emit:", user._id);
     }
   }, [user]);
 
+  useEffect(() => {
+    socket.on('ride-confirmed', ride => {
+      setWaitingForDriver(true)
+      setVehicleFound(false)
+      setRide(ride)
+    })
 
-  // ye h  jb koe new-ride hamre pas aayeggi to ye chize set ho jayegi
-  socket.on('ride-confirmed', ride => {
-    setWaitingForDriver(true)
-    setVehicleFound(false)
-    setRide(ride)
+    socket.on('ride-start', ride => {
+      setWaitingForDriver(false);
+      navigate('/riding', { state: { ride } })
+    })
 
-  })
-
-  socket.on('ride-started', ride => {
-    setWaitingForDriver(false);
-    navigate('/riding', { state: { ride } })
-
-  })
+    return () => {
+      socket.off('ride-confirmed');
+      socket.off('ride-start');
+    };
+  }, [socket, navigate])
 
   const handlePickupChange = async (e) => {
     const inputValue = e.target.value;
@@ -211,39 +213,42 @@ const Home = () => {
   async function findTrip() {
     setPanelOpen(false);
     setVehiclePanelOpen(true)
-    //  console.log("Token ->", localStorage.getItem("token"));
-    const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/rides/get-fare`, {
-      params: {
-        pickup,
-        destination
-      },
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('userToken')}`
-      }
-    })
-
-
-    setFare(response.data)
-
+    
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/rides/get-fare`, {
+        params: {
+          pickup,
+          destination
+        },
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('userToken')}`
+        }
+      })
+      setFare(response.data)
+    } catch (err) {
+      console.error("findTrip error:", err.message);
+    }
   }
 
 
   async function createRide() {
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/rides/create`, {
+        pickup,
+        destination,
+        vehicleType
+      },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('userToken')}`
+          }
 
-    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/rides/create`, {
-      pickup,
-      destination,
-      vehicleType
-    },
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('userToken')}`
-        }
+        })
 
-      })
-
-    console.log(response.data);
-
+      console.log(response.data);
+    } catch (err) {
+      console.error("createRide error:", err.message);
+    }
   }
 
 
@@ -267,7 +272,7 @@ const Home = () => {
             onClick={() => {
               setPanelOpen(false)
             }}
-            className='absolute right-6 top-6 text-2xl opacity-0'>
+            className='absolute right-6 top-6 text-2xl opacity-0 cursor-pointer'>
             <i className="ri-arrow-down-wide-fill"></i> </h5>
 
           <h4 className='text-2xl font-semibold'>Find a trip</h4>
@@ -306,7 +311,7 @@ const Home = () => {
 
           <button
             onClick={findTrip}
-            className='text-lg text-white w-full bg-black rounded-lg mt-0 px-4 py-2'>
+            className='text-lg text-white w-full bg-black rounded-lg mt-0 px-4 py-2 cursor-pointer hover:bg-[#333] transition-colors'>
             Find Trip
           </button>
 

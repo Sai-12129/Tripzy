@@ -79,7 +79,7 @@ const UserLogin = () => {
                         </button>
                     </div>
 
-                    <button className='bg-[#111] text-white font-semibold mb-3 rounded px-4 py-2 w-full text-lg placeholder:text-base '>
+                    <button type="submit" className='bg-[#111] text-white font-semibold mb-3 rounded px-4 py-2 w-full text-lg placeholder:text-base cursor-pointer hover:bg-[#333] transition-colors'>
                         Login
                     </button>
                 </form>

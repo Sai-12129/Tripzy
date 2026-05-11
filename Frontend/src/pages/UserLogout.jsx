@@ -6,26 +6,24 @@ const UserLogout = () => {
     const userToken = localStorage.getItem('userToken')
     const navigate = useNavigate()
 
-     axios.get(`${import.meta.env.VITE_API_URL}/users/logout`, {
-        headers: {
-            Authorization: `Bearer ${userToken}`
-        }
-        
-    }).then((Response) => {
-        if (Response.status == 200) {
-            localStorage.removeItem('userToken')
-            navigate('/login')
-        }
-    })
+    React.useEffect(() => {
+        axios.get(`${import.meta.env.VITE_BASE_URL}/users/logout`, {
+            headers: {
+                Authorization: `Bearer ${userToken}`
+            }
 
-    // .catch((error) => {
-    //     console.error("Logout error:", error.response?.data || error.message)
-    //     // Agar 401 aata hai to bhi token hata ke login bhej do
-    //     if (error.response?.status === 401) {
-    //         localStorage.removeItem('token')
-    //         navigate('/login')
-    //     }
-    // })
+        }).then((Response) => {
+            if (Response.status == 200) {
+                localStorage.removeItem('userToken')
+                navigate('/login')
+            }
+        }).catch((err) => {
+            console.error("User logout error:", err.message);
+            // Even if server fails, we should clear token and redirect
+            localStorage.removeItem('userToken');
+            navigate('/login');
+        })
+    }, [userToken, navigate]);
 
     return (
         <div>UserLogout</div>
